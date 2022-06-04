@@ -73,7 +73,9 @@ class Transformer(nn.Module):
                 PreNorm(dim, Attention(dim, heads = heads, dim_head = dim_head, dropout = dropout)),
                 PreNorm(dim, FeedForward(dim, mlp_dim, dropout = dropout))
             ]))
+        # this gives me series multi-head attention
     def forward(self, x):
+        # we passed through all this series attention and feedforward neural network to get ultimate output
         for attn, ff in self.layers:
             x = attn(x) + x
             x = ff(x) + x
@@ -95,6 +97,7 @@ class ViT(nn.Module):
             Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_height, p2 = patch_width),
             nn.Linear(patch_dim, dim),
         )
+        # this layer convert the image into patches and pass them through a single Linear layer whoes vector size is patch_height*patch_width. 
 
         self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
         self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
@@ -109,9 +112,10 @@ class ViT(nn.Module):
             nn.LayerNorm(dim),
             nn.Linear(dim, num_classes)
         )
+        # it is not required atleast for my applications.
 
     def forward(self, img):
-        x = self.to_patch_embedding(img)
+        x = self.to_patch_embedding(img) # this give me the desired matrix that come from combination of all patches of transformer 
         b, n, _ = x.shape
 
         cls_tokens = repeat(self.cls_token, '1 n d -> b n d', b = b)
